@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anki CSV Gen.</title>
+    <style>
+        :root {
+            /* --- テーマ設定：淡い藤色 (Pale Wisteria) --- */
+            
+            /* ライトモード設定 */
+            --bg-color: #E6DCEC; /* グラデーションなしの単色 */
+            --accent-color: #9D8BB5;
+            
+            --glass-bg: rgba(255, 255, 255, 0.55);
+            --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+            --card-shadow: 0 8px 32px 0 rgba(100, 100, 110, 0.1);
+            
+            --text-main: #5D5D5D;
+            --text-sub: #7A7A7A;
+            
+            --shape-1: #DCD0E8;
+            --shape-2: #F2ECF7;
+
+            --btn-bg: rgba(255, 255, 255, 0.7);
+            --btn-text: #5D5D5D;
+            --btn-border: 1px solid rgba(255, 255, 255, 0.8);
+            --btn-hover: rgba(255, 255, 255, 0.9);
+            
+            --input-bg: rgba(255, 255, 255, 0.5);
+        }
+
+        /* ダークモード設定 */
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg-color: #25232A;
+                --accent-color: #B5A0D9;
+
+                --glass-bg: rgba(30, 28, 35, 0.7);
+                --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+                --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+
+                --text-main: #E6E1EB;
+                --text-sub: #9E9AA3;
+
+                --shape-1: #353040;
+                --shape-2: #2D2A33;
+
+                --btn-bg: rgba(255, 255, 255, 0.05);
+                --btn-text: #E6E1EB;
+                --btn-border: 1px solid rgba(255, 255, 255, 0.1);
+                --btn-hover: rgba(255, 255, 255, 0.1);
+
+                --input-bg: rgba(0, 0, 0, 0.2);
+            }
+        }
+
+        body {
+            font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+            background-color: var(--bg-color);
+            display: flex;
+            flex-direction: column; /* 縦並びにしてボタンを下に配置しやすく */
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: var(--text-main);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- 背景の装飾 --- */
+        .shape {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+        }
+        .shape-1 {
+            top: -10%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background-color: var(--shape-1);
+        }
+        .shape-2 {
+            bottom: -10%;
+            right: -10%;
+            width: 600px;
+            height: 600px;
+            background-color: var(--shape-2);
+        }
+
+        /* --- メインカード --- */
+        .container {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: var(--glass-border);
+            border-radius: 24px;
+            box-shadow: var(--card-shadow);
+            padding: 40px 40px;
+            width: 90%;
+            max-width: 450px;
+            text-align: center;
+            transition: transform 0.3s ease;
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 {
+            margin-top: 0;
+            font-size: 24px;
+            margin-bottom: 25px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--text-main);
+        }
+
+        /* --- ドロップゾーン --- */
+        #drop-zone {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed var(--accent-color);
+            border-radius: 16px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #drop-zone:hover, #drop-zone.dragover {
+            background-color: rgba(157, 139, 181, 0.1);
+            border-color: var(--text-main);
+            transform: scale(1.01);
+        }
+
+        #drop-guide-text {
+            color: var(--text-sub);
+            font-size: 14px;
+        }
+
+        /* --- 入力エリア --- */
+        #input-section {
+            display: none;
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 13px;
+            margin-bottom: 6px;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.4);
+            background: var(--input-bg);
+            color: var(--text-main);
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent-color);
+            background: rgba(255,255,255,0.8);
+        }
+
+        /* --- ボタン --- */
+        button {
+            background: var(--btn-bg);
+            color: var(--btn-text);
+            border: var(--btn-border);
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        button:hover:not(:disabled) {
+            background: var(--btn-hover);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(157, 139, 181, 0.2);
+        }
+
+        button:active:not(:disabled) {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* --- ステータスエリア --- */
+        #status-area {
+            margin-top: 20px;
+            min-height: 20px;
+            font-size: 13px;
+        }
+
+        #status-text {
+            color: var(--text-sub);
+        }
+
+        #download-link {
+            display: inline-block;
+            margin-top: 8px;
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: bold;
+            padding-bottom: 1px;
+            border-bottom: 1px solid transparent;
+            transition: border-bottom 0.2s;
+            cursor: pointer;
+        }
+
+        #download-link:hover {
+            border-bottom: 1px solid var(--accent-color);
+        }
+
+        /* --- 注意書き --- */
+        .note {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 25px;
+            text-align: left;
+            background: rgba(0,0,0,0.03);
+            padding: 12px;
+            border-radius: 10px;
+            line-height: 1.5;
+        }
+
+        /* --- ホームに戻るボタン (ページ最下部に固定) --- */
+        .home-btn {
+                position: fixed;   /* 画面に対して固定位置にする */
+                bottom: 20px;      /* 画面の一番下から20px浮かせた位置 */
+                left: 50%;         /* 画面の横中央に配置 */
+                transform: translateX(-50%); /* 左端基準を中央基準に補正 */
+                
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                text-decoration: none;
+                color: var(--text-sub);
+                font-weight: 500;
+                font-size: 11px;   /* さらに少し小さく */
+                padding: 6px 12px;
+                background: rgba(255, 255, 255, 0.2); /* より控えめな透明度 */
+                border: 1px solid rgba(255, 255, 255, 0.3);
+                border-radius: 20px;
+                backdrop-filter: blur(4px); /* 背景に少しだけぼかしを入れて馴染ませる */
+                transition: all 0.2s ease;
+                z-index: 100;      /* 他の要素より手前に表示 */
+            }
+
+
+
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.6);
+            /* translateX(-50%) を維持したまま translateY を追加する */
+            transform: translateX(-50%) translateY(-2px); 
+            color: var(--text-main);
+        }
+
+        .home-btn svg {
+            width: 14px; /* アイコンも小さく */
+            height: 14px;
+            fill: currentColor;
+            opacity: 0.8;
+        }
+    </style>
+</head>
+<body>
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+
+    <div class="container">
+        <h1>Anki CSV Generator</h1>
+        
+        <div id="drop-zone">
+            <div id="drop-guide-text">ここに .txt ファイルをドロップ<br><span style="font-size:0.8em; opacity:0.7">またはクリックして選択</span></div>
+        </div>
+
+        <div id="input-section">
+            <label for="deck-name-input">ファイル名 (保存時):</label>
+            <input type="text" id="deck-name-input" placeholder="名前を入力">
+        </div>
+
+        <button id="convert-btn" disabled>変換してダウンロード</button>
+
+        <div id="status-area">
+            <span id="status-text"></span><br>
+            <a id="download-link">CSVファイルを保存</a>
+        </div>
+
+        <div class="note">
+            <strong>使い方:</strong><br>
+            1. 保存されたファイルをPC版Ankiで開く<br>
+            2. 「ファイル」→「読み込む」を選択<br>
+            3. デッキを選んでOKを押す
+        </div>
+    </div>
+
+    <a href="https://finda9531.github.io/" class="home-btn">
+        <svg viewBox="0 0 24 24">
+            <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        ホームへ戻る
+    </a>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const convertBtn = document.getElementById('convert-btn');
+        const statusText = document.getElementById('status-text');
+        const downloadLink = document.getElementById('download-link');
+        const inputSection = document.getElementById('input-section');
+        const deckNameInput = document.getElementById('deck-name-input');
+        
+        let currentFileContent = "";
+
+        // ドラッグ＆ドロップ処理
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if(e.dataTransfer.files.length > 0) handleFile(e.dataTransfer.files[0]);
+        });
+        dropZone.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = '.txt';
+            input.onchange = e => { if(e.target.files.length > 0) handleFile(e.target.files[0]); };
+            input.click();
+        });
+
+        function handleFile(file) {
+            if (!file.name.endsWith('.txt')) { alert('txtファイルのみ対応です'); return; }
+            
+            const fileNameWithoutExt = file.name.replace(/\.txt$/i, "");
+            
+            const reader = new FileReader();
+            reader.onload = e => {
+                currentFileContent = e.target.result;
+                
+                dropZone.innerHTML = `<span style="font-size:1.2em">📄</span><br>${file.name}`;
+                dropZone.style.borderColor = "var(--text-main)";
+                
+                inputSection.style.display = 'block';
+                deckNameInput.value = fileNameWithoutExt;
+                deckNameInput.focus();
+
+                convertBtn.disabled = false;
+                statusText.innerText = "";
+                downloadLink.style.display = 'none';
+            };
+            reader.readAsText(file);
+        }
+
+        // HTML整形
+        function formatToHtml(text) {
+            const lines = text.trim().split(/\r\n|\r|\n/);
+            if (lines.length <= 1) return text.trim();
+            let html = lines[0] + '<br><small style=""font-size:0.8em; color:#777;"">' + lines.slice(1).join('<br>') + '</small>';
+            return html;
+        }
+
+        function sanitizeFileName(input) {
+            return input.replace(/[\\/:*?"<>|]/g, "").trim() || "AnkiDeck";
+        }
+
+        convertBtn.addEventListener('click', () => {
+            if (!currentFileContent) return;
+            
+            const userDeckName = deckNameInput.value;
+            const safeFileName = sanitizeFileName(userDeckName);
+
+            const cards = currentFileContent.split('===');
+            let csvContent = ""; 
+
+            let count = 0;
+            cards.forEach(card => {
+                if (!card.trim()) return;
+                const parts = card.split('---');
+                if (parts.length >= 2) {
+                    const front = `"${formatToHtml(parts[0]).replace(/"/g, '""')}"`;
+                    const back = `"${formatToHtml(parts[1]).replace(/"/g, '""')}"`;
+                    csvContent += `${front},${back}\n`;
+                    count++;
+                }
+            });
+
+            if (count === 0) {
+                statusText.innerText = "有効なカードが見つかりませんでした。";
+                return;
+            }
+
+            const bom = new Uint8Array([0xEF, 0xBB, 0xBF]);
+            const blob = new Blob([bom, csvContent], { type: 'text/csv' });
+            const url = URL.createObjectURL(blob);
+            
+            downloadLink.href = url;
+            downloadLink.download = `${safeFileName}.csv`;
+            downloadLink.style.display = 'inline-block';
+            statusText.innerText = `${count}枚のカードデータを生成しました。`;
+            convertBtn.disabled = true;
+        });
+    </script>
+</body>
+</html>
