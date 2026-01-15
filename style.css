@@ -1,0 +1,128 @@
+:root {
+    /* --- テーマ設定：淡い藤色 --- */
+    --bg-color: #E6DCEC;
+    --accent-color: #9D8BB5;
+    --glass-bg: rgba(255, 255, 255, 0.55);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+    --card-shadow: 0 8px 32px 0 rgba(100, 100, 110, 0.1);
+    --text-main: #5D5D5D;
+    --text-sub: #7A7A7A;
+    --shape-1: #DCD0E8;
+    --shape-2: #F2ECF7;
+    --btn-bg: rgba(255, 255, 255, 0.7);
+    --btn-text: #5D5D5D;
+    --btn-border: 1px solid rgba(255, 255, 255, 0.8);
+    --btn-hover: rgba(255, 255, 255, 0.9);
+    --input-bg: rgba(255, 255, 255, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    :root {
+        --bg-color: #25232A;
+        --accent-color: #B5A0D9;
+        --glass-bg: rgba(30, 28, 35, 0.7);
+        --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+        --card-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+        --text-main: #E6E1EB;
+        --text-sub: #9E9AA3;
+        --shape-1: #353040;
+        --shape-2: #2D2A33;
+        --btn-bg: rgba(255, 255, 255, 0.05);
+        --btn-text: #E6E1EB;
+        --btn-border: 1px solid rgba(255, 255, 255, 0.1);
+        --btn-hover: rgba(255, 255, 255, 0.1);
+        --input-bg: rgba(0, 0, 0, 0.2);
+    }
+}
+
+body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background-color: var(--bg-color);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: var(--text-main);
+    overflow: hidden;
+    position: relative;
+}
+
+.shape {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(80px);
+    z-index: -1;
+}
+
+.shape-1 { top: -10%; left: -10%; width: 500px; height: 500px; background-color: var(--shape-1); }
+.shape-2 { bottom: -10%; right: -10%; width: 600px; height: 600px; background-color: var(--shape-2); }
+
+.container {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: var(--glass-border);
+    border-radius: 24px;
+    box-shadow: var(--card-shadow);
+    padding: 40px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
+}
+
+h1 { font-size: 24px; margin-bottom: 25px; font-weight: 600; color: var(--text-main); }
+
+#drop-zone {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px dashed var(--accent-color);
+    border-radius: 16px;
+    padding: 40px 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+#drop-zone:hover, #drop-zone.dragover {
+    background-color: rgba(157, 139, 181, 0.1);
+    border-color: var(--text-main);
+    transform: scale(1.01);
+}
+
+#input-section { display: none; margin-bottom: 20px; text-align: left; }
+label { display: block; font-size: 13px; margin-bottom: 6px; color: var(--text-sub); font-weight: 600; }
+
+input[type="text"] {
+    width: 100%; padding: 10px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.4);
+    background: var(--input-bg); color: var(--text-main); font-size: 15px; box-sizing: border-box; outline: none;
+}
+
+button {
+    background: var(--btn-bg); color: var(--btn-text); border: var(--btn-border); padding: 12px 20px;
+    border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; width: 100%; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+}
+
+button:hover:not(:disabled) {
+    background: var(--btn-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(157, 139, 181, 0.2);
+}
+
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+#status-area { margin-top: 20px; min-height: 20px; font-size: 13px; }
+#download-link { display: none; margin-top: 8px; color: var(--accent-color); font-weight: bold; text-decoration: none; border-bottom: 1px solid transparent; }
+#download-link:hover { border-bottom: 1px solid var(--accent-color); }
+
+.note { font-size: 12px; color: var(--text-sub); margin-top: 25px; text-align: left; background: rgba(0,0,0,0.03); padding: 12px; border-radius: 10px; }
+
+.home-btn {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+    display: flex; align-items: center; gap: 6px; text-decoration: none; color: var(--text-sub);
+    font-size: 11px; padding: 6px 12px; background: rgba(255, 255, 255, 0.2); border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 20px; backdrop-filter: blur(4px); transition: all 0.2s ease; z-index: 100;
+}
+
+.home-btn:hover { background: rgba(255, 255, 255, 0.5); transform: translateX(-50%) translateY(-2px); color: var(--text-main); }
+.home-btn svg { width: 14px; height: 14px; fill: currentColor; opacity: 0.8; }
